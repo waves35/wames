@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Geografei</title>
+<style>
+:root{
+  --bg:#052033;
+  --card:#073148;
+  --accent:#1e90ff;
+  --accent-2:#4da6ff;
+  --muted:#9bb7d6;
+  --correct:#16a34a;
+  --present:#f0b429;
+  --absent:#223344;
+  --glass: rgba(255,255,255,0.035);
+  --glass-2: rgba(255,255,255,0.02);
+  --shadow: 0 12px 34px rgba(3,10,24,0.6);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(600px 260px at 10% 10%, rgba(77,166,255,0.06), transparent 15%),
+    linear-gradient(180deg,#041423 0%, #021017 70%);
+  color:#eaf4ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Slightly smaller card */
+.container{
+  width:620px;
+  max-width:96%;
+  background:linear-gradient(180deg,var(--card), rgba(6,37,58,0.88));
+  border-radius:12px;
+  padding:18px;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,0.03);
+  position:relative;
+  backdrop-filter: blur(6px) saturate(120%);
+}
+
+/* Title centered on top */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:8px;
+}
+.title{
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:1px;
+  color:var(--accent-2);
+  padding:10px 18px;
+  border-radius:10px;
+}
+
+/* Subheader */
+.subtitle{
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+  margin-top:6px;
+}
+
+/* Board */
+.board{
+  display:grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap:8px;
+  margin-top:12px;
+  margin-bottom:10px;
+}
+.row{display:flex;gap:8px;justify-content:center}
+.tile{
+  width:56px;height:56px;border-radius:8px;
+  background:var(--glass);border:1px solid rgba(255,255,255,0.03);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;
+  color:#eaf4ff;transition:transform .12s ease, background .18s ease;
+  box-shadow: 0 3px 8px rgba(2,6,14,0.6);
+}
+
+/* keyboard */
+.keyboard{margin-top:10px;display:flex;gap:6px;flex-direction:column}
+.key-row{display:flex;gap:6px;justify-content:center}
+.key{
+  background:var(--glass-2);color:var(--muted);border-radius:8px;padding:10px 8px;
+  font-weight:800;min-width:40px;text-align:center;cursor:pointer;user-select:none;
+  border:1px solid rgba(255,255,255,0.02);transition:transform .08s ease, background .12s;
+}
+.key.action{min-width:74px}
+.key:active{transform:translateY(1px)}
+
+/* states */
+.tile.correct{background:linear-gradient(180deg,var(--correct), #0f8a59); color:#021; border:1px solid rgba(255,255,255,0.06)}
+.tile.present{background:linear-gradient(180deg,var(--present), #d29800); color:#071; border:1px solid rgba(255,255,255,0.04)}
+.tile.absent{background:linear-gradient(180deg,var(--absent), rgba(8,20,30,0.9)); color:#9fb2c9; opacity:0.96}
+
+/* info */
+.info{display:flex;justify-content:center;align-items:center;margin-top:8px;gap:12px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:13px}
+
+/* overlay for win/lose */
+.overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg, rgba(2,6,18,0.55), rgba(2,6,18,0.75));
+  border-radius:12px;
+  z-index:30;
+  backdrop-filter: blur(4px);
+  padding:20px;
+}
+.modal{
+  background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  border-radius:12px;
+  padding:18px 22px;
+  box-shadow: 0 8px 28px rgba(2,6,18,0.6);
+  text-align:center;
+  color:#eaf4ff;
+  width:100%;
+  max-width:420px;
+  border:1px solid rgba(255,255,255,0.04);
+}
+.modal h2{margin:0 0 12px 0;font-size:20px}
+.modal p{margin:0 0 18px 0;color:var(--muted)}
+.modal .btn-primary{
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  color:#021;
+  border:none;
+  padding:10px 14px;
+  font-weight:800;
+  border-radius:10px;
+  cursor:pointer;
+  box-shadow: 0 8px 20px rgba(30,144,255,0.14);
+}
+.modal .btn-secondary{
+  background:transparent;color:var(--accent-2);border:1px solid rgba(77,166,255,0.12);
+  padding:10px 14px;font-weight:700;border-radius:10px;cursor:pointer;margin-left:8px;
+}
+
+/* responsive */
+@media (max-width:640px){
+  .container{padding:14px}
+  .tile{width:46px;height:46px;font-size:18px}
+  .key.action{min-width:60px}
+}
+</style>
+</head>
+<body>
+<div class="container" role="application" aria-label="Jogo Geografei">
+  <div class="header">
+    <div class="title">Geografei</div>
+  </div>
+  <div class="subtitle">Adivinhe o país de 6 letras · 6 tentativas</div>
+
+  <div id="board" class="board" aria-live="polite"></div>
+
+  <div id="keyboard" class="keyboard" aria-hidden="false">
+    <div class="key-row" id="row1"></div>
+    <div class="key-row" id="row2"></div>
+    <div class="key-row" id="row3"></div>
+  </div>
+
+  <div class="info">
+    <div class="hint" id="status">Use o teclado físico ou clique nas teclas para jogar.</div>
+  </div>
+
+  <!-- overlay container (hidden by default) -->
+  <div id="overlay" class="overlay" style="display:none;">
+    <div id="modal" class="modal" role="dialog" aria-modal="true">
+      <h2 id="modalTitle"></h2>
+      <p id="modalMessage"></p>
+      <div>
+        <button id="modalPrimary" class="btn-primary"></button>
+        <button id="modalSecondary" class="btn-secondary" style="display:none;"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Lista exata fornecida pelo usuário (ordem preservada) */
+const WORDS_RAW = [
+"Angola","Belize","Brasil","Brunei","Canada","Chipre","Egipto","França","Gambia","Grecia",
+"Guiana","Iraque","Israel","Italia","Jersey","Jibuti","Kuwait","Lesoto","Libano","Malavi",
+"Mexico","Mónaco","Panama","Quenia","Ruanda","Russia","Servia","Suécia","Taiwan","Tuvalu",
+"Uganda","Zambia"
+];
+
+/* Função para remover acentos e normalizar para ASCII lowercase para validação */
+function normalizeWord(s){
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+/* Monte lista normalizada e mapa para manter a forma original ao revelar */
+const normalizedList = [];
+const normToOriginal = {}; // key: normalized -> one original (first occurrence)
+
+for(const w of WORDS_RAW){
+  const norm = normalizeWord(w);
+  if(norm.length === 6){
+    normalizedList.push(norm);
+    if(!(norm in normToOriginal)) normToOriginal[norm] = w; // preserve original form
+  }
+}
+
+/* Se nenhuma palavra válida, aborta */
+if(normalizedList.length === 0) throw new Error('Nenhuma palavra válida de 6 letras encontrada na lista.');
+
+let solutionNorm = normalizedList[Math.floor(Math.random()*normalizedList.length)]; // normalized solution
+let row = 0;
+let col = 0;
+const maxRows = 6;
+const cols = 6;
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+
+const overlay = document.getElementById('overlay');
+const modalTitle = document.getElementById('modalTitle');
+const modalMessage = document.getElementById('modalMessage');
+const modalPrimary = document.getElementById('modalPrimary');
+const modalSecondary = document.getElementById('modalSecondary');
+
+/* Create visual board */
+function createBoard(){
+  boardEl.innerHTML='';
+  for(let r=0;r<maxRows;r++){
+    const rowEl = document.createElement('div');
+    rowEl.className='row';
+    rowEl.setAttribute('data-row', r);
+    for(let c=0;c<cols;c++){
+      const t = document.createElement('div');
+      t.className='tile';
+      t.setAttribute('data-row', r);
+      t.setAttribute('data-col', c);
+      t.textContent='';
+      rowEl.appendChild(t);
+    }
+    boardEl.appendChild(rowEl);
+  }
+}
+createBoard();
+
+/* Keyboard */
+function createKeyboard(){
+  const r1 = document.getElementById('row1');
+  const r2 = document.getElementById('row2');
+  const r3 = document.getElementById('row3');
+  r1.innerHTML=''; r2.innerHTML=''; r3.innerHTML='';
+  const row1Keys = "QWERTYUIOP".split('');
+  const row2Keys = "ASDFGHJKL".split('');
+  const row3Keys = "ZXCVBNM".split('');
+
+  row1Keys.forEach(k=>{ const b=document.createElement('div'); b.className='key'; b.textContent=k; b.onclick=()=>pressKey(k); r1.appendChild(b); });
+  row2Keys.forEach(k=>{ const b=document.createElement('div'); b.className='key'; b.textContent=k; b.onclick=()=>pressKey(k); r2.appendChild(b); });
+  const enter = document.createElement('div'); enter.className='key action'; enter.textContent='ENTER'; enter.onclick=enterKey;
+  const del = document.createElement('div'); del.className='key action'; del.textContent='DEL'; del.onclick=deleteKey;
+  r3.appendChild(enter);
+  row3Keys.forEach(k=>{ const b=document.createElement('div'); b.className='key'; b.textContent=k; b.onclick=()=>pressKey(k); r3.appendChild(b); });
+  r3.appendChild(del);
+}
+createKeyboard();
+
+/* Helpers */
+function tileAt(r,c){ return document.querySelector('.tile[data-row="'+r+'"][data-col="'+c+'"]'); }
+function setStatus(msg){ statusEl.textContent = msg; }
+
+/* overlay control */
+function showOverlay(title, message, primaryText, primaryHandler, secondaryText, secondaryHandler){
+  modalTitle.textContent = title;
+  modalMessage.textContent = message;
+  modalPrimary.textContent = primaryText;
+  modalPrimary.onclick = primaryHandler;
+  if(secondaryText){
+    modalSecondary.style.display = 'inline-block';
+    modalSecondary.textContent = secondaryText;
+    modalSecondary.onclick = secondaryHandler;
+  } else {
+    modalSecondary.style.display = 'none';
+    modalSecondary.onclick = null;
+  }
+  overlay.style.display = 'flex';
+}
+function hideOverlay(){ overlay.style.display = 'none'; }
+
+/* reset game */
+function resetGame(){
+  solutionNorm = normalizedList[Math.floor(Math.random()*normalizedList.length)];
+  row = 0;
+  col = 0;
+  createBoard();
+  createKeyboard();
+  hideOverlay();
+  setStatus('Jogo reiniciado. Boa sorte!');
+}
+
+/* Input handlers */
+function pressKey(ch){
+  if(row>=maxRows) return;
+  if(col>=cols) return;
+  const t = tileAt(row,col);
+  t.textContent = ch;
+  t.dataset.letter = ch.toLowerCase();
+  col++;
+}
+function deleteKey(){
+  if(col<=0) return;
+  col--;
+  const t = tileAt(row,col);
+  t.textContent='';
+  delete t.dataset.letter;
+}
+function enterKey(){
+  if(col < cols){ setStatus('A palavra precisa ter 6 letras'); return; }
+  let guess = '';
+  for(let c=0;c<cols;c++){ guess += (tileAt(row,c).dataset.letter || ''); }
+  const guessNorm = normalizeWord(guess);
+
+  if(!normalizedList.includes(guessNorm) && guessNorm !== solutionNorm){
+    setStatus('País não está na lista de respostas do jogo');
+    shakeRow(row);
+    return;
+  }
+
+  const solArr = Array.from(solutionNorm);
+  const guessArr = Array.from(guessNorm);
+  const result = Array(cols).fill('absent');
+
+  for(let i=0;i<cols;i++){
+    if(guessArr[i] === solArr[i]){
+      result[i] = 'correct';
+      solArr[i] = null;
+    }
+  }
+  for(let i=0;i<cols;i++){
+    if(result[i] === 'correct') continue;
+    const idx = solArr.indexOf(guessArr[i]);
+    if(idx !== -1){
+      result[i] = 'present';
+      solArr[idx] = null;
+    }
+  }
+
+  for(let i=0;i<cols;i++){
+    ((r,c,cls)=>{
+      const tile = tileAt(r,c);
+      setTimeout(()=>{ tile.classList.add(cls); }, c*200);
+    })(row,i,result[i]);
+  }
+
+  setTimeout(()=>{ updateKeyboardColors(guessArr, result); }, cols*200);
+
+  if(result.every(x=>x==='correct')){
+    setStatus('parabens voce acertou');
+    const revealed = normToOriginal[solutionNorm] || solutionNorm.toUpperCase();
+    showOverlay('parabens voce acertou', revealed, 'jogar denovo', resetGame);
+    row = maxRows; // lock input
+    return;
+  }
+
+  row++;
+  col=0;
+  if(row===maxRows){
+    const revealedOriginal = normToOriginal[solutionNorm] || solutionNorm.toUpperCase();
+    setStatus('Acabaram as tentativas.');
+    showOverlay('game over', 'Acabaram as tentativas. País: ' + revealedOriginal, 'tentar novamente', resetGame, 'fechar', hideOverlay);
+    row = maxRows;
+  } else {
+    setStatus('Tentativa enviada. Restam ' + (maxRows-row) + ' tentativas.');
+  }
+}
+
+/* keyboard coloring */
+function updateKeyboardColors(letters, results){
+  letters.forEach((ltr,i)=>{
+    const key = Array.from(document.querySelectorAll('.key')).find(k=>k.textContent.toLowerCase()===ltr);
+    if(!key) return;
+    if(results[i]==='correct') { key.style.background = 'linear-gradient(180deg,var(--correct), #0f8a59)'; key.style.color = '#021'; }
+    else if(results[i]==='present'){ key.style.background = 'linear-gradient(180deg,var(--present), #d9a500)'; key.style.color='#051'; }
+    else if(results[i]==='absent'){ key.style.background = 'rgba(255,255,255,0.02)'; key.style.color = 'var(--muted)'; }
+  });
+}
+
+/* shake animation for invalid guess */
+function shakeRow(r){
+  const rowEl = document.querySelector('.row[data-row="'+r+'"]');
+  rowEl.animate([{ transform:'translateX(-8px)'},{ transform:'translateX(8px)'},{ transform:'translateX(0)'}], { duration:360, iterations:1 });
+}
+
+/* keyboard events */
+document.addEventListener('keydown', e=>{
+  if(overlay.style.display === 'flex') return; // block input when overlay shown
+  if(e.key === 'Enter') enterKey();
+  else if(e.key === 'Backspace') deleteKey();
+  else {
+    const k = e.key.toUpperCase();
+    if(k.length===1 && k >= 'A' && k <= 'Z') pressKey(k);
+  }
+});
+
+/* initialize */
+createKeyboard();
+setStatus('Jogo pronto. Boa sorte!');
+console.log('Geografei solução (debug):', normToOriginal[solutionNorm] || solutionNorm);
+</script>
+</body>
+</html>

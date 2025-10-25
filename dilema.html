@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dilema Absurdos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Reset básico */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    /* Fundo com gradiente e ruído sutil */
+    body {
+      min-height: 100vh;
+      font-family: Inter, Arial, sans-serif;
+      color: #eaf2ff;
+      background:
+        radial-gradient(1200px 800px at 20% 20%, #0d6efd22, transparent 60%),
+        radial-gradient(800px 600px at 80% 30%, #8a2be222, transparent 60%),
+        linear-gradient(180deg, #0b1220, #090f1a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* Container com efeito vidro fosco + borda neon */
+    .container {
+      width: min(950px, 100%);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(17,24,39,0.65), rgba(11,17,27,0.55));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(99, 163, 255, 0.35);
+      box-shadow:
+        0 10px 40px rgba(13,110,253,0.15),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+      overflow: hidden;
+    }
+
+    /* Cabeçalho com título e status */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(99, 163, 255, 0.25);
+      background: linear-gradient(180deg, rgba(13,110,253,0.08), transparent);
+    }
+    .title {
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      font-size: clamp(20px, 2.8vw, 28px);
+      color: #cfe1ff;
+    }
+    .status {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 14px;
+      color: #9db9ff;
+    }
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(13,110,253,0.18);
+      border: 1px solid rgba(13,110,253,0.35);
+      color: #d6e6ff;
+      font-weight: 600;
+    }
+
+    /* Barra de progresso */
+    .progressWrap {
+      width: 100%;
+      padding: 10px 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+      border-bottom: 1px solid rgba(99, 163, 255, 0.18);
+    }
+    .progressBar {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0d6efd, #8a2be2);
+      box-shadow: 0 0 16px rgba(13,110,253,0.7);
+      transition: width 400ms ease;
+    }
+
+    /* Área central com animação */
+    .content {
+      padding: clamp(16px, 3vw, 28px);
+      display: grid;
+      gap: 20px;
+    }
+    .prompt {
+      text-align: center;
+      font-size: clamp(18px, 2.4vw, 22px);
+      color: #dbe8ff;
+      line-height: 1.4;
+      animation: fadeIn 300ms ease both;
+    }
+
+    /* Grid das opções */
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(14px, 2vw, 22px);
+      align-items: stretch;
+    }
+
+    /* Cartões das opções com efeito de foco e interação */
+    .card {
+      position: relative;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border: 1px solid rgba(99,163,255,0.25);
+      padding: clamp(16px, 2.5vw, 22px);
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.25);
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(13,110,253,0.55);
+      box-shadow: 0 14px 28px rgba(13,110,253,0.18);
+    }
+    .card:active {
+      transform: translateY(0px) scale(0.995);
+    }
+    .cardTitle {
+      font-size: clamp(16px, 2vw, 20px);
+      font-weight: 600;
+      color: #eaf2ff;
+    }
+
+    /* Rodapé com contadores */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-top: 1px solid rgba(99,163,255,0.18);
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,0.03));
+      color: #9db9ff;
+      font-size: 14px;
+    }
+    .footer .counter strong {
+      color: #d6e6ff;
+    }
+
+    /* Animações e responsividade */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hide {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 260ms ease, transform 260ms ease;
+    }
+
+    @media (max-width: 720px) {
+      .options { grid-template-columns: 1fr; }
+      .card { min-height: 100px; }
+      .status { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">Dilema Absurdos</div>
+      <div class="status">
+        <div class="badge" id="progressLabel">0/50</div>
+        <div class="badge" id="choiceLeftCount">Esq: 0</div>
+        <div class="badge" id="choiceRightCount">Dir: 0</div>
+      </div>
+    </div>
+
+    <div class="progressWrap">
+      <div class="progressBar"><div class="progress" id="progress"></div></div>
+    </div>
+
+    <div class="content">
+      <div class="prompt" id="prompt">Carregando seu primeiro dilema...</div>
+      <div class="options">
+        <div class="card" id="left"><div class="cardTitle" id="leftText">Opção A</div></div>
+        <div class="card" id="right"><div class="cardTitle" id="rightText">Opção B</div></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="counter">Dilema <strong id="currentIndex">1</strong> de <strong id="totalCount">50</strong></div>
+      <div class="counter">Cliques: <strong id="clicks">0</strong></div>
+    </div>
+  </div>
+
+  <script>
+    // Lista de 50 dilemas absurdos, sem conteúdo explícito. Clicar em qualquer opção avança.
+    const dilemmas = [
+      ["Viver um dia inteiro em câmera lenta", "Viver um dia inteiro em velocidade 2x"],
+      ["Ter que rimar tudo que fala", "Só poder falar cantando ópera"],
+      ["Comer só alimentos roxos por uma semana", "Comer só alimentos brancos por uma semana"],
+      ["Trocar de lugar com seu gato por 24h", "Trocar de lugar com sua geladeira por 24h"],
+      ["Fazer compras falando com o carrinho", "Ir ao cinema vestido de banana gigante"],
+      ["Ter mãos pegajosas", "Ter pés que brilham no escuro"],
+      ["Chorar confete por 48h", "Espirrar glitter por 48h"],
+      ["Nunca mais usar emojis", "Só poder se comunicar com emojis"],
+      ["Rir alto em momentos sérios", "Ficar sério em momentos engraçados"],
+      ["Dormir em pé por uma noite", "Dormir rolando numa esteira por uma noite"],
+      ["Ter cabelo que muda de cor conforme o humor", "Ter voz que muda de pitch conforme o humor"],
+      ["Seu celular só carrega dançando forró", "Seu Wi‑Fi só conecta cantando pagode"],
+      ["Usar luvas de forno o dia todo", "Usar nadadeiras o dia todo"],
+      ["Bicicleta sem freio por 1 quarteirão", "Patins com rodas quadradas por 1 quarteirão"],
+      ["Ter uma buzina em vez de risada", "Ter um apito em vez de espirro"],
+      ["Ser perseguido por um pato caramelo por 1 hora", "Perseguir um pato caramelo por 1 hora"],
+      ["Falar apenas sussurrando por 24h", "Falar apenas gritando por 24h"],
+      ["Comer sopa com garfo por 1 refeição", "Comer arroz com colher medidora por 1 refeição"],
+      ["Ter um ventilador portátil na cabeça", "Ter uma lanterna presa no nariz"],
+      ["Trocar todos os talheres por espátulas", "Trocar todos os copos por conchas"],
+      ["Usar capa invisível que não funciona bem", "Usar bota que pula sem controle"],
+      ["Relógio que sempre adianta 5 min", "Relógio que sempre atrasa 5 min"],
+      ["Cabelo de macarrão instantâneo", "Som de notificação é um berro de cabra"],
+      ["Tênis que canta quando anda", "Camisa que faz barulho de chuva"],
+      ["Ter GPS que fala errado", "Ter mapa que gira sozinho"],
+      ["Seu café vira suco às 12h", "Seu suco vira café às 18h"],
+      ["Chapéu que solta bolhas", "Óculos que mostram filtros de gato"],
+      ["Escrever só com caneta invisível", "Desenhar só com giz que quebra"],
+      ["Só poder andar de costas por 1 hora", "Só poder andar pulando por 1 hora"],
+      ["Abrir portas com uma dança", "Enviar e‑mails com uma rima"],
+      ["Ter uma risada que liga alarmes", "Um espirro que apaga luzes"],
+      ["Guarda‑chuva que abre ao contrário", "Capa de chuva que atrai vento"],
+      ["Fogão que só liga cantando sertanejo", "Chuveiro que só esquenta fazendo beatbox"],
+      ["Viver um dia com legenda automática", "Viver um dia com dublagem em espanhol"],
+      ["Comer pizza com tesoura", "Comer lasanha com escumadeira"],
+      ["Fone que traduz tudo para mineirês", "Fone que traduz tudo para gaúchês"],
+      ["Só poder usar canetas roxas", "Só poder usar post‑its amarelos"],
+      ["Pasta de dente que faz espuma colorida", "Sabonete que toca pagode"],
+      ["Roupas que mudam de estampa sozinhas", "Sapatos que dão pequenos pulos"],
+      ["Sempre confundir terça com quinta", "Sempre confundir sábado com domingo"],
+      ["Micro‑ondas que anuncia cada prato", "Torradeira que canta parabéns"],
+      ["Ter uma mochila que fala piadas ruins", "Ter um chaveiro que canta modão"],
+      ["Carregar um ananás como pet por 1 dia", "Carregar um abacate como pet por 1 dia"],
+      ["Travar ao dizer 'oi'", "Travar ao dizer 'tchau'"],
+      ["Corredor que vira labirinto por 30 min", "Sala que vira pista de dança por 30 min"],
+      ["Ficar com voz de locutor por 1 hora", "Ficar com voz de desenho por 1 hora"],
+      ["Cadeira que gira sem parar por 5 min", "Mesa que desliza 5 cm toda hora"],
+      ["Guarda‑roupa que comenta seus looks", "Espelho que dá notas de 0 a 10"],
+      ["Relógio que vibra a cada risada", "Pulseira que pisca a cada espirro"]
+    ];
+
+    const total = dilemmas.length;
+
+    // Elementos
+    const promptEl = document.getElementById('prompt');
+    const leftCard = document.getElementById('left');
+    const rightCard = document.getElementById('right');
+    const leftText = document.getElementById('leftText');
+    const rightText = document.getElementById('rightText');
+    const progress = document.getElementById('progress');
+    const progressLabel = document.getElementById('progressLabel');
+    const choiceLeftCount = document.getElementById('choiceLeftCount');
+    const choiceRightCount = document.getElementById('choiceRightCount');
+    const currentIndexEl = document.getElementById('currentIndex');
+    const totalCountEl = document.getElementById('totalCount');
+    const clicksEl = document.getElementById('clicks');
+
+    // Estado
+    let index = 0;
+    let clicks = 0;
+    let leftCount = 0;
+    let rightCount = 0;
+
+    totalCountEl.textContent = total.toString();
+
+    function render() {
+      const [left, right] = dilemmas[index];
+      promptEl.textContent = "Escolha entre as duas opções absurdas:";
+      leftText.textContent = left;
+      rightText.textContent = right;
+      currentIndexEl.textContent = (index + 1).toString();
+      const pct = Math.round((index) / total * 100);
+      progress.style.width = pct + "%";
+      progressLabel.textContent = (index) + "/" + total;
+    }
+
+    function next(choice) {
+      clicks++;
+      clicksEl.textContent = clicks.toString();
+      if (choice === 'left') leftCount++; else rightCount++;
+      choiceLeftCount.textContent = "Esq: " + leftCount;
+      choiceRightCount.textContent = "Dir: " + rightCount;
+
+      // Transição suave
+      leftCard.classList.add('hide');
+      rightCard.classList.add('hide');
+      promptEl.classList.add('hide');
+
+      setTimeout(() => {
+        index = (index + 1) % total;
+        leftCard.classList.remove('hide');
+        rightCard.classList.remove('hide');
+        promptEl.classList.remove('hide');
+        render();
+      }, 260);
+    }
+
+    // Eventos: clicar em qualquer opção avança
+    leftCard.addEventListener('click', () => next('left'));
+    rightCard.addEventListener('click', () => next('right'));
+
+    // Inicializa
+    render();
+  </script>
+</body>
+</html>
